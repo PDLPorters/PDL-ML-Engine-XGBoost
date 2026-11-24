@@ -4,8 +4,14 @@ use warnings;
 use ExtUtils::MakeMaker;
 use PDL::Core::Dev;
 
+my $brew_prefix = '';
+if ($^O eq 'darwin') {
+    chomp($brew_prefix = `brew --prefix 2>/dev/null` || '');
+}
+my @inc_dirs = ('/usr/include', '/usr/local/include');
+push @inc_dirs, "$brew_prefix/include" if $brew_prefix;
 my $xgb_inc;
-for my $dir ('/usr/include', '/usr/local/include', '/opt/homebrew/include') {
+for my $dir (@inc_dirs) {
     if (-f "$dir/xgboost/c_api.h") {
         $xgb_inc = $dir;
         last;
@@ -15,7 +21,7 @@ if (!$xgb_inc && system('pkg-config --exists xgboost 2>/dev/null') != 0) {
     die "libxgboost-dev (xgboost/c_api.h) is required to build PDL::ML::Engine::XGBoost.\n";
 }
 my $inc_flag = $xgb_inc ? ' -I' . $xgb_inc : '';
-my $lib_flag = ($xgb_inc && $xgb_inc =~ m{^/opt/homebrew}) ? '-L/opt/homebrew/lib ' : '';
+my $lib_flag = ($brew_prefix && $xgb_inc && $xgb_inc =~ m{^\$brew_prefix}) ? "-L$brew_prefix/lib " : '';
 
 my $pdl_inc = PDL::Core::Dev::PDL_INCLUDE();
 
