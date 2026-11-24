@@ -5,12 +5,10 @@ use ExtUtils::MakeMaker;
 use PDL::Core::Dev;
 
 if (!-f '/usr/include/xgboost/c_api.h' && system('pkg-config --exists xgboost 2>/dev/null') != 0) {
-    warn "libxgboost-dev (xgboost/c_api.h) is required to build PDL::ML::Engine::XGBoost.\n";
-    exit 0;
+    die "libxgboost-dev (xgboost/c_api.h) is required to build PDL::ML::Engine::XGBoost.\n";
 }
 
 my $pdl_inc = PDL::Core::Dev::PDL_INCLUDE();
-$pdl_inc =~ s/^"|"$//g;
 
 WriteMakefile(
     NAME               => 'PDL::ML::Engine::XGBoost',
@@ -29,20 +27,20 @@ WriteMakefile(
     PREREQ_PM => {
         'PDL' => '2.080',
     },
-    INC   => "-I. $pdl_inc",
+    INC     => '-I. ' . $pdl_inc,
     XSMULTI => 1,
-    LIBS  => ['-lxgboost'],
-    clean => { FILES => 'PDL-ML-Engine-XGBoost-* *.o XGBoost.bs XGBoost.c' },
+    LIBS    => ['-lxgboost'],
+    clean   => { FILES => 'PDL-ML-Engine-XGBoost-* *.o XGBoost.bs XGBoost.c' },
     META_MERGE => {
         'meta-spec' => { version => 2 },
         resources   => {
             repository => {
                 type => 'git',
-                url  => 'https://github.com/GoogleCloudPlatform/google-auth-library-perl.git',
-                web  => 'https://github.com/GoogleCloudPlatform/google-auth-library-perl',
+                url  => 'https://github.com/PDLPorters/PDL-ML-Engine-XGBoost.git',
+                web  => 'https://github.com/PDLPorters/PDL-ML-Engine-XGBoost',
             },
             bugtracker => {
-                web => 'https://github.com/GoogleCloudPlatform/google-auth-library-perl/issues',
+                web => 'https://github.com/PDLPorters/PDL-ML-Engine-XGBoost/issues',
             },
         },
     },
