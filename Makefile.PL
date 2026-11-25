@@ -4,20 +4,33 @@ use warnings;
 use ExtUtils::MakeMaker;
 use PDL::Core::Dev;
 
-if (!-f '/usr/include/xgboost/c_api.h' && system('pkg-config --exists xgboost 2>/dev/null') != 0) {
-    warn "libxgboost-dev (xgboost/c_api.h) is required to build PDL::ML::Engine::XGBoost.\n";
-    exit 0;
+my $brew_prefix = '';
+if ($^O eq 'darwin') {
+    chomp($brew_prefix = `brew --prefix 2>/dev/null` || '');
 }
+my @inc_dirs = ('/usr/include', '/usr/local/include');
+push @inc_dirs, "$brew_prefix/include" if $brew_prefix;
+my $xgb_inc;
+for my $dir (@inc_dirs) {
+    if (-f "$dir/xgboost/c_api.h") {
+        $xgb_inc = $dir;
+        last;
+    }
+}
+if (!$xgb_inc && system('pkg-config --exists xgboost 2>/dev/null') != 0) {
+    die "libxgboost-dev (xgboost/c_api.h) is required to build PDL::ML::Engine::XGBoost.\n";
+}
+my $inc_flag = $xgb_inc ? ' -I' . $xgb_inc : '';
+my $lib_flag = ($brew_prefix && $xgb_inc && $xgb_inc =~ m{^\$brew_prefix}) ? "-L$brew_prefix/lib " : '';
 
 my $pdl_inc = PDL::Core::Dev::PDL_INCLUDE();
-$pdl_inc =~ s/^"|"$//g;
 
 WriteMakefile(
     NAME               => 'PDL::ML::Engine::XGBoost',
     AUTHOR             => q{C.J. Collier <cjac@google.com>},
     VERSION_FROM       => 'lib/PDL/ML/Engine/XGBoost.pm',
     ABSTRACT_FROM      => 'lib/PDL/ML/Engine/XGBoost.pm',
-    LICENSE            => 'apache_2_0',
+    LICENSE            => 'perl_5',
     MIN_PERL_VERSION   => '5.010',
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => '0',
@@ -29,20 +42,21 @@ WriteMakefile(
     PREREQ_PM => {
         'PDL' => '2.080',
     },
-    INC   => "-I. $pdl_inc",
+    INC     => '-I. ' . $pdl_inc . $inc_flag,
     XSMULTI => 1,
-    LIBS  => ['-lxgboost'],
-    clean => { FILES => 'PDL-ML-Engine-XGBoost-* *.o XGBoost.bs XGBoost.c' },
+    LIBS    => [ $lib_flag . '-lxgboost' ],
+    ($brew_prefix ? (dynamic_lib => { OTHERLDFLAGS => "-L$brew_prefix/lib -Wl,-rpath,$brew_prefix/lib -lxgboost" }) : ()),
+    clean   => { FILES => 'PDL-ML-Engine-XGBoost-* *.o XGBoost.bs XGBoost.c' },
     META_MERGE => {
         'meta-spec' => { version => 2 },
         resources   => {
             repository => {
                 type => 'git',
-                url  => 'https://github.com/GoogleCloudPlatform/google-auth-library-perl.git',
-                web  => 'https://github.com/GoogleCloudPlatform/google-auth-library-perl',
+                url  => 'https://github.com/PDLPorters/PDL-ML-Engine-XGBoost.git',
+                web  => 'https://github.com/PDLPorters/PDL-ML-Engine-XGBoost',
             },
             bugtracker => {
-                web => 'https://github.com/GoogleCloudPlatform/google-auth-library-perl/issues',
+                web => 'https://github.com/PDLPorters/PDL-ML-Engine-XGBoost/issues',
             },
         },
     },

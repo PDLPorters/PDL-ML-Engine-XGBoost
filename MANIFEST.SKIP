@@ -7,3 +7,14 @@
 ^XGBoost\.bs$
 \.o$
 ^PDL-ML-Engine-XGBoost-
+^\.git/
+^\.github/
+^\.gitignore$
+^dot-git/
+^_alien/
+\.bs$
+\.xsc$
+^lib/.*\.c$
+\.tar\.gz$
+~$
+\.bak$

@@ -1,9 +1,12 @@
 Changes
-lib/PDL/ML/Engine/XGBoost.pm
-Makefile.PL
+LICENSE
 MANIFEST
 MANIFEST.SKIP
+Makefile.PL
 README.md
+examples/quickstart.pl
+lib/PDL/ML/Engine/XGBoost.pm
+lib/PDL/ML/Engine/XGBoost.xs
 t/00-load.t
 t/01-train-predict.t
-lib/PDL/ML/Engine/XGBoost.xs
+t/02-tutorial-disconfirmation.t
